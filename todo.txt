@@ -1,1 +1,4 @@
-x 2026-09-16 2026-09-16 Do something cool +project +project2 @context @context2 tag:value tag2:value2
+2026-09-17 Do something cool +project @context
+2026-09-17 new task
+2026-09-17 new task
+x 2026-09-17 2026-09-17 new task

@@ -38,12 +38,18 @@ class Todo:
     tasks: list[Task] = []
     
     def __init__(self, file: str) -> None:
+        self.file: str = file
 
         with open(file, "r") as f:
             for line in f.readlines():
                 parse: Task | None = self._parse_line(line)
                 if parse:
                     self.add_task(parse)
+    
+    def _save(self) -> None:
+        with open(self.file, "w") as f:
+            for task in self.tasks:
+                _ = f.write(str(task) + "\n")
 
     def _parse_line(self, line: str) -> Task | None:
         task: Task = Task("")
@@ -106,6 +112,7 @@ class Todo:
 
     def add_task(self, task: Task) -> None:
         self.tasks.append(task)
+        self._save()
 
     def create_task(
         self,
@@ -117,25 +124,28 @@ class Todo:
         contexts: list[str] | None = None,
         tags: dict[str, str] | None = None,
         completed: bool = False
-    ) -> None:
-        self.tasks.append(
-            Task(
-                desc,
-                creation_date,
-                completion_date,
-                priority,
-                projects,
-                contexts,
-                tags,
-                completed
-            )
+    ) -> Task:
+        task = Task(
+            desc,
+            creation_date,
+            completion_date,
+            priority,
+            projects,
+            contexts,
+            tags,
+            completed
         )
+        self.tasks.append(task)
+        self._save()
+        return task
     
     def complete_task_by_index(self, index: int) -> None:
         self.tasks[index].complete_task()
+        self._save()
     
     def complete_task(self, task: Task) -> None:
         task.complete_task()
+        self._save()
         
     def search_by_desc(self, query: str, case_sensitive: bool = False) -> list[Task] | None:
         result: list[Task] = [task for task in self.tasks if query in task.desc] if case_sensitive \
@@ -198,22 +208,25 @@ def get_current_date() -> str:
 
 if __name__ == "__main__":
     todo: Todo = Todo("todo.txt")
+
+    t = todo.create_task("new task")
+    todo.complete_task(t)
     
-    todo.create_task("Do something cool", projects=["project"], contexts=["context"])
-    todo.create_task("Do something cool but i did it", priority=Priority.A, completed=False, projects=["project"], contexts=["context"])
-    todo.create_task("Special args task", completed=False, tags={"due": "2026-09-17", "awesome": "yes"})
+    # todo.create_task("Do something cool", projects=["project"], contexts=["context"])
+    # todo.create_task("Do something cool but i did it", priority=Priority.A, completed=False, projects=["project"], contexts=["context"])
+    # todo.create_task("Special args task", completed=False, tags={"due": "2026-09-17", "awesome": "yes"})
 
-    s: list[Task] | None = todo.search_by_desc("cool")
-    if s:
-        for t in s:
-            # print(t)
-            print()
+    # s: list[Task] | None = todo.search_by_desc("cool")
+    # if s:
+    #     for t in s:
+    #         # print(t)
+    #         print()
 
-    s2 = todo.search_by_desc("did it")
-    if s2 and len(s2) > 0:
-        todo.complete_task(s2[0])
+    # s2 = todo.search_by_desc("did it")
+    # if s2 and len(s2) > 0:
+    #     todo.complete_task(s2[0])
 
-    todo.complete_task_by_index(2)
+    # todo.complete_task_by_index(2)
 
-    for task in todo.tasks:
-        print(str(task))
+    # for task in todo.tasks:
+    #     print(str(task))
