@@ -151,7 +151,8 @@ activemq-data/
 
 # Environments
 .env
-.envrc
+# Disabled as to include the .envrc that loads the nix shell
+# .envrc
 .direnv/
 .venv
 env/
@@ -219,3 +220,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Nix
+result/
+result
