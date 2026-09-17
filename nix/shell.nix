@@ -1,19 +1,19 @@
 {
   system ? builtins.currentSystem,
   pkgs ? import <nixpkgs> { inherit system; },
+  lib ? pkgs.lib,
+  python ? pkgs.python3,
+  mkShell ? pkgs.mkShell,
 }:
 let
-  # configure python as needed
-  python = pkgs.python314;
-
   # Runtime dependencies
   runtimeDeps = [ python ];
 in
-pkgs.mkShell {
+mkShell {
   buildInputs = runtimeDeps;
 
-  # Dev & Complier dependencies
+  # Dev & Complie time dependencies
   nativeBuildInputs = [ python ];
 
-  LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath runtimeDeps}";
+  LD_LIBRARY_PATH = "${lib.makeLibraryPath runtimeDeps}";
 }
