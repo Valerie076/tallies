@@ -1,5 +1,5 @@
 {
-  nixpkgs ? <nnixpkgs>,
+  nixpkgs ? <nixpkgs>,
   system ? builtins.currentSystem,
   renderers,
 }:

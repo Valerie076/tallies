@@ -4,8 +4,13 @@
       url = "nixpkgs/nixos-unstable";
     };
 
-    pyproject = {
+    pyproject-nix = {
       url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -14,7 +19,8 @@
     {
       self,
       nixpkgs,
-      pyproject,
+      pyproject-nix,
+      rust-overlay,
     }:
     let
       # List of supported systems
@@ -32,20 +38,13 @@
       eachSystem = lib.genAttrs systems;
 
       # Fetches & reads ./pyproject.toml
-      project = pyproject.lib.project.loadPyproject {
+      pyproject = pyproject-nix.lib.project.loadPyproject {
         projectRoot = ./.;
       };
-      inherit (project) renderers;
 
-      # Create a python environment based on pyproject.toml
-      wrapPython =
-        pkgs:
-        let
-          # This controls our python version, lowest in nixpkgs is 3.11
-          python = pkgs.python3;
-          arg = renderers.withPackages { inherit python; };
-        in
-        python.withPackages (arg);
+      rust-toolchain-file = ./rust-toolchain.toml;
+
+      inherit (pyproject) renderers;
     in
     {
       # A utility function to build the package with a given version of python
@@ -59,12 +58,19 @@
       devShells = eachSystem (
         system:
         let
-          pkgs = import nixpkgs { inherit system; };
-          python = wrapPython pkgs;
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ (import rust-overlay) ];
+          };
+          rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile rust-toolchain-file;
         in
         {
-          default = import ./nix/shell.nix {
-            inherit pkgs system python;
+          default = import ./nix/base-shell.nix {
+            inherit
+              pkgs
+              rust-toolchain
+              pyproject
+              ;
           };
         }
       );
